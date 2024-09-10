@@ -24,3 +24,22 @@ async function signUp(event) {
         event.target.reset();
     }
 }
+
+async function login(event){
+    event.preventDefault();
+    const loginData = {
+        email:event.target.email.value,
+        password:event.target.password.value,
+    };
+    console.log("Login attemp", loginData);
+};
+
+document.addEventListener('DOMContentLoaded', () => {
+    const signupRedirector = document.getElementById('signup_redirect');
+    if (signupRedirector) {
+        signupRedirector.addEventListener('click', () => {
+            window.location = '/index.html'; // Update with your correct sign-up path
+        });
+    }
+});
+
