@@ -25,14 +25,38 @@ async function signUp(event) {
     }
 }
 
-async function login(event){
+async function login(event) {
     event.preventDefault();
+    
     const loginData = {
-        email:event.target.email.value,
-        password:event.target.password.value,
+        email: event.target.email.value,
+        password: event.target.password.value,
     };
-    console.log("Login attemp", loginData);
+
+    try {
+        const response = await axios.post(`http://localhost:4000/user/login`, loginData);
+
+        if (response.status === 200) {
+            alert('Login Successful');
+        }
+    } catch (error) {
+        if (error.response) {
+            // Server responded with a status other than 2xx
+            if (error.response.status === 401) {
+                alert('Invalid Password');
+            } else if (error.response.status === 404) {
+                alert('User not found');
+            } else {
+                alert('Something went wrong. Please try again later.');
+            }
+        } else {
+            // Network error or request not made
+            console.log('Error', error.message);
+            alert('Network error. Please check your connection.');
+        }
+    }
 };
+
 
 document.addEventListener('DOMContentLoaded', () => {
     const signupRedirector = document.getElementById('signup_redirect');
