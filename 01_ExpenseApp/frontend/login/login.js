@@ -10,6 +10,7 @@ async function login(event) {
         const response = await axios.post(`http://localhost:4000/user/login`, loginData);
 
         if (response.status === 200) {
+            localStorage.setItem('token', response.data.token)
             alert('Login Successful');
             window.location.href = '../features/dashboard.html'
         }

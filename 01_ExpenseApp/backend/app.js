@@ -5,10 +5,20 @@ const route = require('./routes/routes');
 const sequelize = require('./util/database');
 const app = express();
 
+// models
+
+const User = require('./models/user');
+const Expense = require('./models/expense');
+const { FORCE } = require('sequelize/lib/index-hints');
+
 // Middleware
 app.use(bodyParser.json());
 app.use(cors());
 app.use(route);
+User.hasMany(Expense,{ foreignKey:'userId', onDelete:'CASCADE'});
+Expense.belongsTo(User, {foreignKey:'userId'});
+
+
 
 // Database Sync and Server Start
 sequelize.sync()
