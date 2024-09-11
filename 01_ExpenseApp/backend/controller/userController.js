@@ -1,26 +1,32 @@
 const User = require('../models/user');
 
+const bcryptjs = require('bcryptjs');
+
 exports.signUp = async (req, res, next) => {
     const { name, email, password } = req.body;
 
     try {
-        // Check if email already exists, and await the result
+        // Check if email already exists
         const isUserExist = await User.findOne({ where: { email: email } });
 
         if (isUserExist) {
-            // Return a 400 status code for "Bad Request"
             return res.status(400).json({ message: 'User already exists' });
         }
 
-        // Create a new user if the email does not exist
-        const response = await User.create({ name: name, email: email, password: password });
+        // Hash the password using await and bcryptjs
+        const hashedPassword = await bcryptjs.hash(password, 10);
+
+        // Create the new user with hashed password
+        const response = await User.create({ name, email, password: hashedPassword });
+
         res.status(201).json({ message: 'User created successfully', data: response });
+        
     } catch (error) {
-        console.log(error);
-        // Send a 500 status code for "Server Error"
+        console.error("Error creating user:", error);
         res.status(500).json({ message: 'Error creating user', error: error.message });
     }
 };
+
 
 exports.login = async (req, res, next) => {
     const { email, password } = req.body;
@@ -29,7 +35,10 @@ exports.login = async (req, res, next) => {
         const user = await User.findOne({ where: { email: email } });
 
         if (user) {
-            if (user.password === password) {
+
+            const isPasswordValid = await bcryptjs.compare(password, user.password)
+
+            if (isPasswordValid) {
                 res.status(200).json({ message: 'User Login Successfully' });
             } else {
                 res.status(401).json({ message: 'Invalid Password' });
