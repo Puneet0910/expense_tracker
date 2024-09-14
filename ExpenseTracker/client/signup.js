@@ -9,13 +9,11 @@ async function signUp(event) {
 
     try {
         const response = await axios.post('http://localhost:4000/user/signup', signupData);
-        console.log('User signed up successfully:', response.data);
         alert('Signup successful');
         event.target.reset();
+        window.location.href = './login.html';
     } catch (error) {
         console.log('Error signing up:', error);
-
-        // Check if the error response exists and has the expected message
         if (error.response && error.response.data.message) {
             alert(`Error: ${error.response.data.message}`);
         } else {
@@ -29,7 +27,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const loginRedirector = document.getElementById('login_redirect');
     if (loginRedirector) {
         loginRedirector.addEventListener('click', () => {
-            window.location.href = '../login/login.html'; 
+            window.location.href = './login.html'; 
         });
     }
 });

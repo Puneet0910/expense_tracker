@@ -1,5 +1,4 @@
 const Sequelize = require('sequelize');
-
 const sequelize = require('../util/database');
 
 const user = sequelize.define('user',{
@@ -16,6 +15,7 @@ const user = sequelize.define('user',{
         type:Sequelize.STRING,
         allowNull:false,
     },
+    
 });
 
 module.exports = user;

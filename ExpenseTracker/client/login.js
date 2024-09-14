@@ -1,18 +1,22 @@
 async function login(event) {
     event.preventDefault();
-    
-    const loginData = {
+
+    const loginDetails = {
         email: event.target.email.value,
         password: event.target.password.value,
     };
 
     try {
-        const response = await axios.post(`http://localhost:4000/user/login`, loginData);
+        const response = await axios.post('http://localhost:4000/user/login', loginDetails);
 
         if (response.status === 200) {
-            localStorage.setItem('token', response.data.token)
-            alert('Login Successful');
-            window.location.href = '../features/dashboard.html'
+            // Store the JWT token in localStorage
+            localStorage.setItem('token', response.data.token);
+
+            // Redirect to the index page
+            window.location.href = './index.html';
+        } else {
+            alert('Unexpected response status: ' + response.status);
         }
     } catch (error) {
         if (error.response) {
@@ -30,14 +34,11 @@ async function login(event) {
             alert('Network error. Please check your connection.');
         }
     }
-};
-
+}
 
 document.addEventListener('DOMContentLoaded', () => {
-    const signupRedirector = document.getElementById('signup_redirect');
-    if (signupRedirector) {
-        signupRedirector.addEventListener('click', () => {
-            window.location = '../signup/signup.html'; // Update with your correct sign-up path
-        });
-    }
+    const signupRedirect = document.getElementById('signup_redirect');
+    signupRedirect.addEventListener('click', () => {
+        window.location.href = './signup.html';
+    });
 });
