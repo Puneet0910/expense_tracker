@@ -20,14 +20,14 @@ exports.getPremium = async (req, res, next) => {
     order: [[Sequelize.literal("totalExpense"), "DESC"]],
   });
 
-  const expenses = await Expense.findAll({
-    include: [
-      {
-        model: User,
-        attributes: ["name"], // Specify the columns you want to retrieve from the joined table
-      },
-    ],
-  });
-  const user = await User.findAll();
+  // const expenses = await Expense.findAll({
+  //   include: [
+  //     {
+  //       model: User,
+  //       attributes: ["name"], // Specify the columns you want to retrieve from the joined table
+  //     },
+  //   ],
+  // });
+  // const user = await User.findAll();
   return res.status(200).json({ success: true, results });
 };
