@@ -138,6 +138,7 @@ document.getElementById("rzp-btn1").onclick = async function (e) {
           if (response.status === 203) {
             buyButton.style.display = "none";
             buyText.innerHTML = "You are a premium user now";
+            location.reload();
           }
         } catch (error) {
           console.error("Error updating transaction status:", error);
@@ -162,12 +163,28 @@ leaderBoard.addEventListener("click", async () => {
       "http://localhost:3000/premium/showLeaderBoard"
     );
     var div = document.getElementById("leader-board-list");
+    var boardList = document.getElementById("board-list");
+
+    // Check if the 'div' exists before clearing its contents
+    if (div) {
+      // Clear the leaderboard before appending new data
+      div.innerHTML = "";
+    } else {
+      console.error("Element with id 'leader-board-list' not found");
+      return;  // Exit if the element is not found
+    }
+
+    // Check if board-list exists before manipulating its style
+    if (boardList) {
+      boardList.style.display = "block";
+    } else {
+      console.error("Element with id 'board-list' not found");
+    }
 
     if (responses.data.results.length > 0) {
       for (let i = 0; i < responses.data.results.length; i++) {
         const li = document.createElement("li");
         li.className = "list-group-item"; // Bootstrap class for list items
-        document.getElementById("board-list").style.display = "block";
         li.textContent = `Name- ${responses.data.results[i].name} Total Expense  ${responses.data.results[i].totalExpense}`;
 
         div.appendChild(li);

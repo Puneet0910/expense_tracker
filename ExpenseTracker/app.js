@@ -8,7 +8,7 @@ const userRouter = require("./routes/user");
 const expenseRouter = require("./routes/expense");
 const purchaseRouter = require("./routes/purchase");
 const premiumRouter = require("./routes/premium");
-
+const passwordRouter = require("./routes/password");
 app.use(cors());
 
 //Databse
@@ -27,6 +27,7 @@ app.use("/user", userRouter);
 app.use("/expense", userAuth.authenticate, expenseRouter);
 app.use("/purchase", userAuth.authenticate, purchaseRouter);
 app.use("/premium", premiumRouter);
+app.use("/password", passwordRouter);
 app.use(errController.error404);
 
 // // Associations
