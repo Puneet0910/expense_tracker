@@ -9,6 +9,7 @@ const expenseRouter = require("./routes/expense");
 const purchaseRouter = require("./routes/purchase");
 const premiumRouter = require("./routes/premium");
 const passwordRouter = require("./routes/password");
+
 app.use(cors());
 
 //Databse
@@ -16,6 +17,7 @@ const sequelize = require("./util/database");
 const Expense = require("./models/expense");
 const User = require("./models/user");
 const Order = require("./models/order");
+const ForgotPassword = require("./models/forgotPassword");
 
 const userAuth = require("./middleware/auth");
 
@@ -36,6 +38,9 @@ Expense.belongsTo(User);
 
 User.hasMany(Order); // Relation btw User and Order
 Order.belongsTo(User);
+
+User.hasMany(ForgotPassword);
+ForgotPassword.belongsTo(User);
 
 sequelize
   .sync()
