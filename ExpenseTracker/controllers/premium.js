@@ -8,7 +8,14 @@ exports.getPremium = async (req, res, next) => {
     attributes: [
       "id",
       "name",
-      [Sequelize.fn("SUM", Sequelize.col("Expenses.amount")), "totalExpense"],
+      [
+        Sequelize.fn(
+          "COALESCE",
+          Sequelize.fn("SUM", Sequelize.col("Expenses.amount")),
+          0
+        ),
+        "totalExpense",
+      ],
     ],
     include: [
       {
