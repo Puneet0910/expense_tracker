@@ -176,3 +176,43 @@ function download() {
       showError(err);
     });
 }
+
+function showPagination({
+  currentPage,
+  hasNextPage,
+  nextPage,
+  hasPreviousPage,
+  previosPage,
+  lastPage,
+  total,
+}) {
+  const pagination = document.createElement("div");
+  pagination.innerHTML = "";
+
+  if (hasPreviousPage) {
+    const btn2 = document.createElement("button");
+    btn2.className = "btn2";
+    btn2.innerHTML = previosPage;
+    btn2.addEventListener("click", () => {
+      getExpenses(previosPage);
+    });
+    pagination.appendChild(btn2);
+  }
+  const btn1 = document.createElement("button");
+  btn1.className = "btn1";
+  btn1.innerHTML = `<h3>${currentPage}</h3>`;
+  btn1.addEventListener("click", () => {
+    getExpenses(currentPage);
+  });
+  pagination.appendChild(btn1);
+
+  if (hasNextPage) {
+    const btn3 = document.createElement("button");
+    btn3.className = "btn3";
+    btn3.innerHTML = nextPage;
+    btn3.addEventListener("click", () => {
+      getExpenses(nextPage);
+    });
+    pagination.appendChild(btn3);
+  }
+}
