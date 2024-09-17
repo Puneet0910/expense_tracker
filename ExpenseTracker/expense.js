@@ -1,7 +1,7 @@
 const amount = document.querySelector("#amount");
 const description = document.querySelector("#description");
 const category = document.querySelector("#category");
-const ulItems = document.querySelector("#item-list"); // Ensure this matches the id in your HTML
+const ulItems = document.querySelector("#item-list");
 const form = document.querySelector("#form");
 const buyButton = document.querySelector("#rzp-btn1");
 const buyText = document.querySelector("#premium-p");
@@ -19,74 +19,50 @@ async function onSubmit(e) {
     category: category.value,
   };
   const token = localStorage.getItem("token");
+  // { headers: { Authorization: token } }
+  await axios.post(`${api}/addExpense`, expDets, {
+    headers: { Authorization: token },
+  });
 
-  try {
-    const response = await axios.post(`${api}/addExpense`, expDets, {
-      headers: { Authorization: token },
-    });
-
-    // Add the newly added expense to the list
-    li(response.data.expense);
-
-    // Clear input fields
-    amount.value = '';
-    description.value = '';
-    category.value = '';
-  } catch (error) {
-    console.error("Error adding expense:", error);
-  }
+  //   li(expDets);
 }
 
 function delButton(obj) {
   const delBtn = document.createElement("button");
-  delBtn.className = "btn btn-danger btn-sm"; // Bootstrap classes for styling
-  delBtn.textContent = "Delete";
-
+  delBtn.className = "del-btn";
+  delBtn.appendChild(document.createTextNode("Delete Expense"));
   delBtn.addEventListener("click", (e) => deleteBtn(e, obj));
-
-  async function deleteBtn(e, obj) {
-    const token = localStorage.getItem("token");
-
-    let li = e.target.parentElement;
-    try {
-      await axios.delete(`${api}/deleteExpense/${obj.id}`, {
-        headers: { Authorization: token },
-      });
-      if (ulItems) {
-        ulItems.removeChild(li);
-      } else {
-        console.error("ulItems element not found");
-      }
-    } catch (error) {
-      console.error("Error deleting expense:", error);
-    }
-  }
 
   return delBtn;
 }
 
+async function deleteBtn(e, obj) {
+  const token = localStorage.getItem("token");
+
+  let li = e.target.parentElement;
+
+  await axios.delete(`${api}/deleteExpense/${obj.id}`, {
+    headers: { Authorization: token },
+  });
+
+  ulItems.removeChild(li);
+}
+
+
 function li(obj) {
   if (!ulItems) {
-    console.error("ulItems element not found");
-    return;
+    console.error("Element with class 'item-list' not found");
+    return; // Exit function if ulItems is not found
   }
 
   const li = document.createElement("li");
-  li.className = "list-group-item d-flex justify-content-between align-items-center"; // Bootstrap classes for list items and layout
-
-  // Create a div for expense details
-  const expenseDetails = document.createElement("div");
-  expenseDetails.textContent = `${obj.amount} - ${obj.description} (${obj.category})`;
-  li.appendChild(expenseDetails);
-
-  // Create and append the delete button
-  const delBtn = delButton(obj);
-  li.appendChild(delBtn);
-
+  li.className = "items";
+  li.appendChild(delButton(obj));
+  li.appendChild(
+    document.createTextNode(`${obj.amount} ${obj.description} ${obj.category}`)
+  );
   ulItems.appendChild(li);
 }
-
-form.addEventListener("submit", onSubmit);
 
 window.addEventListener("DOMContentLoaded", async () => {
   const token = localStorage.getItem("token");
@@ -108,89 +84,94 @@ window.addEventListener("DOMContentLoaded", async () => {
       buyText.innerHTML = "You are a premium user now";
     }
   } catch (error) {
-    console.error("Error fetching expenses:", error);
+    console.error("Error loading expenses:", error);
   }
 });
 
+
 document.getElementById("rzp-btn1").onclick = async function (e) {
+  //
   const token = localStorage.getItem("token");
 
-  try {
-    const response = await axios.get(
-      "http://localhost:3000/purchase/premiummembership",
-      { headers: { Authorization: token } }
-    );
+  const response = await axios.get(
+    "http://localhost:3000/purchase/premiummembership",
+    { headers: { Authorization: token } }
+  );
 
-    var options = {
-      key: response.data.key_id,
-      order_id: response.data.order.id,
-      handler: async function (response) {
-        try {
-          await axios.post(
-            "http://localhost:3000/purchase/updatetransactionstatus",
-            {
-              order_id: options.order_id,
-              payment_id: response.razorpay_payment_id,
-            },
-            { headers: { Authorization: token } }
-          );
-          alert("You are a Premium User Now");
-          if (response.status === 203) {
-            buyButton.style.display = "none";
-            buyText.innerHTML = "You are a premium user now";
-            location.reload();
-          }
-        } catch (error) {
-          console.error("Error updating transaction status:", error);
-        }
-      },
-    };
+  var options = {
+    key: response.data.key_id, // Enter the Key Id generated from the Dashboard
+    order_id: response.data.order.id, // This handler function will handle the success payment
+    handler: async function (response) {
+      await axios.post(
+        "http://localhost:3000/purchase/updatetransactionstatus",
+        {
+          order_id: options.order_id,
+          payment_id: response.razorpay_payment_id,
+        },
+        { headers: { Authorization: token } }
+      );
+      alert("You are a Premium User Now");
+      if (response.status === 203) {
+        buyButton.style.display = "none";
+        buyText.innerHTML = "You are premium user now";
+      }
+    },
+  };
 
-    const rzp1 = new Razorpay(options);
-    rzp1.open();
-    e.preventDefault();
-    rzp1.on("payment.failed", function (response) {
-      alert("Something went wrong");
-    });
-  } catch (error) {
-    console.error("Error initiating premium membership:", error);
-  }
+  const rzp1 = new Razorpay(options);
+  rzp1.open();
+  e.preventDefault();
+  rzp1.on("payment.failed", function (response) {
+    alert("Something went wrong");
+    alert(response.error.code);
+    alert(response.error.description);
+    alert(response.error.source);
+    alert(response.error.step);
+    alert(response.error.reason);
+    alert(response.error.metadata.order_id);
+    alert(response.error.metadata.payment_id);
+  });
 };
 
 leaderBoard.addEventListener("click", async () => {
-  try {
-    const responses = await axios.get(
-      "http://localhost:3000/premium/showLeaderBoard"
-    );
-    var div = document.getElementById("leader-board-list");
-    var boardList = document.getElementById("board-list");
+  const responses = await axios.get(
+    "http://localhost:3000/premium/showLeaderBoard"
+  );
 
-    // Check if the 'div' exists before clearing its contents
-    if (div) {
-      // Clear the leaderboard before appending new data
-      div.innerHTML = "";
-    } else {
-      console.error("Element with id 'leader-board-list' not found");
-      return;  // Exit if the element is not found
+  var div = document.getElementById("leader-board-list");
+
+  if (responses.data.results.length > 0) {
+    for (let i = 0; i < responses.data.results.length; i++) {
+      const li = document.createElement("li");
+      li.className = "leader-board-item";
+      document.getElementById("board-list").style.display = "block";
+      li.textContent = `Name- ${responses.data.results[i].name} Total Expense  ${responses.data.results[i].totalExpense}`;
+
+      div.appendChild(li);
     }
-
-    // Check if board-list exists before manipulating its style
-    if (boardList) {
-      boardList.style.display = "block";
-    } else {
-      console.error("Element with id 'board-list' not found");
-    }
-
-    if (responses.data.results.length > 0) {
-      for (let i = 0; i < responses.data.results.length; i++) {
-        const li = document.createElement("li");
-        li.className = "list-group-item"; // Bootstrap class for list items
-        li.textContent = `Name- ${responses.data.results[i].name} Total Expense  ${responses.data.results[i].totalExpense}`;
-
-        div.appendChild(li);
-      }
-    }
-  } catch (error) {
-    console.error("Error fetching leader board:", error);
   }
 });
+
+//Download File
+
+function download() {
+  axios
+    .get("http://localhost:3000/user/download", {
+      headers: { Authorization: token },
+    })
+    .then((response) => {
+      if (response.status === 201) {
+        //the bcakend is essentially sending a download link
+        //  which if we open in browser, the file would download
+        var a = document.createElement("a");
+        a.href = response.data.fileUrl;
+        a.download = "myexpense.csv";
+        a.click();
+      } else {
+        throw new Error(response.data.message);
+      }
+    })
+    .catch((err) => {
+      showError(err);
+    });
+}
