@@ -5,9 +5,45 @@ const sequelize = require("../util/database");
 const UserServices = require("../services/userservices");
 const S3Services = require("../services/S3services");
 
+const Items_Per_Page = 5;
+
+exports.getExpenses = async (req, res, next) => {
+  const expenses = await Expense.findAll({ where: { userId: req.user.id } });
+  const userDetails = await User.findByPk(req.user.id);
+
+  const page = +req.query.page || 1;
+  let totalItems;
+  Expense.count()
+    .then((total) => {
+      totalItems = total;
+      return Expense.findAll({
+        offset: (page - 1) * Items_Per_Page,
+        limit: Items_Per_Page,
+      });
+    })
+    .then((expenses) => {
+      res.status(200).json({
+        success: true,
+        userDetails,
+        expenses,
+        currentPage: page,
+        hasNextPage: Items_Per_Page * page < totalItems,
+        nextPage: page + 1,
+        hasPreviousPage: page > 1,
+        previosPage: page - 1,
+        lastPage: Math.ceil(totalItems / Items_Per_Page),
+        total: totalItems,
+      });
+    })
+    .catch((err) => {
+      console.log(err);
+    });
+};
+
 exports.downloadExpense = async (req, res, next) => {
   try {
     const expenses = await UserServices.getExpenses(req);
+
     const stringifiedExpenses = JSON.stringify(expenses);
 
     //It should depend upon the userid
@@ -52,17 +88,6 @@ exports.addExpense = async (req, res, next) => {
       await transaction.rollback();
       return res.status(500).json({ success: false, error: err });
     });
-};
-
-exports.getExpenses = async (req, res, next) => {
-  // Expense.findAll()
-  const expenses = await Expense.findAll({ where: { userId: req.user.id } });
-  const userDetails = await User.findByPk(req.user.id);
-  // req.user
-  //   .getExpenses()
-  // ((expenses) => {
-  return res.status(200).json({ expenses, success: true, userDetails });
-  // })
 };
 
 exports.deleteExpense = (req, res, next) => {

@@ -1,3 +1,5 @@
+// const { default: products } = require("razorpay/dist/types/products");
+
 const amount = document.querySelector("#amount");
 const description = document.querySelector("#description");
 const category = document.querySelector("#category");
@@ -5,6 +7,8 @@ const ulItems = document.querySelector("#item-list");
 const form = document.querySelector("#form");
 const buyButton = document.querySelector("#rzp-btn1");
 const buyText = document.querySelector("#premium-p");
+
+const pagination = document.querySelector("#pagination");
 
 const leaderBoard = document.querySelector("#leader-board");
 
@@ -48,13 +52,7 @@ async function deleteBtn(e, obj) {
   ulItems.removeChild(li);
 }
 
-
 function li(obj) {
-  if (!ulItems) {
-    console.error("Element with class 'item-list' not found");
-    return; // Exit function if ulItems is not found
-  }
-
   const li = document.createElement("li");
   li.className = "items";
   li.appendChild(delButton(obj));
@@ -64,30 +62,37 @@ function li(obj) {
   ulItems.appendChild(li);
 }
 
-window.addEventListener("DOMContentLoaded", async () => {
+form.addEventListener("submit", onSubmit);
+
+/////GetExpenses
+async function getExpenses(pagesize = 1) {
+  // const objUrlParams = new URLSearchParams(window.location.search);
+  // const page = objUrlParams.get("page") || 1;
+  // const page = 1;
   const token = localStorage.getItem("token");
 
-  try {
-    const response = await axios.get(`${api}/getExpenses`, {
-      headers: { Authorization: token },
-    });
+  const response = await axios.get(`${api}/getExpenses?page=${pagesize}`, {
+    headers: { Authorization: token },
+  });
 
-    if (response.data.expenses.length !== 0) {
-      for (let i = 0; i < response.data.expenses.length; i++) {
-        li(response.data.expenses[i]);
-      }
-    }
+  console.log(response);
+  ulItems.innerHTML = "";
 
-    if (response.data.userDetails.ispremiumuser) {
-      buyButton.style.display = "none";
-      buyText.style.display = "";
-      buyText.innerHTML = "You are a premium user now";
+  if (response.data.expenses.length !== 0) {
+    for (let i = 0; i < response.data.expenses.length; i++) {
+      li(response.data.expenses[i]);
+      showPagination(response.data);
     }
-  } catch (error) {
-    console.error("Error loading expenses:", error);
   }
-});
 
+  if (response.data.userDetails.ispremiumuser) {
+    buyButton.style.display = "none";
+    buyText.style.display = "";
+    buyText.innerHTML = "You are a premium user now";
+  }
+}
+
+window.addEventListener("DOMContentLoaded", getExpenses);
 
 document.getElementById("rzp-btn1").onclick = async function (e) {
   //
@@ -114,6 +119,7 @@ document.getElementById("rzp-btn1").onclick = async function (e) {
       if (response.status === 203) {
         buyButton.style.display = "none";
         buyText.innerHTML = "You are premium user now";
+        // document.body.innerHTML += `<div> You are premium user now</div>`;
       }
     },
   };
@@ -154,6 +160,10 @@ leaderBoard.addEventListener("click", async () => {
 
 //Download File
 
+function showError(err) {
+  document.body.innerHTML += `<div style="color:red;"> ${err}</div>`;
+}
+
 function download() {
   const token = localStorage.getItem("token");
   axios
@@ -186,7 +196,7 @@ function showPagination({
   lastPage,
   total,
 }) {
-  const pagination = document.createElement("div");
+  // const pagination = document.createElement("div");
   pagination.innerHTML = "";
 
   if (hasPreviousPage) {
